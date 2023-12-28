@@ -13,9 +13,6 @@ impl Mongo {
         let client = Client::with_options(client_options).unwrap();
 
         let db = client.default_database().unwrap();
-        for collection_name in db.list_collection_names(None).await.unwrap() {
-            println!("{}", collection_name);
-        }
         UserModel::new(&db)
             .create(
                 "Vilayat".to_owned(),
