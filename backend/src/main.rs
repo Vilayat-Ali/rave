@@ -1,6 +1,4 @@
 use axum::Router;
-use dotenv::dotenv;
-use envy::from_env;
 use std::io;
 use tower::ServiceBuilder;
 use tower_http::compression::CompressionLayer;
@@ -9,13 +7,12 @@ use tower_http::trace::TraceLayer;
 
 use backend::db::Mongo;
 use backend::routes::API;
-use backend::ENV;
+use backend::{import_envs, ENV};
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
     // env
-    dotenv().ok();
-    let _envs: ENV = from_env().unwrap();
+    let ENV { port, .. } = import_envs();
 
     // tracing and logging
     tracing_subscriber::fmt()
@@ -39,7 +36,7 @@ async fn main() -> io::Result<()> {
         .nest("/api", API::generate_route())
         .layer(middlewares);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await?;
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}")).await?;
     axum::serve(listener, app).await?;
 
     Ok(())
